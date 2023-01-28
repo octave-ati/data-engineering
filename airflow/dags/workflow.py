@@ -3,11 +3,6 @@ from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
-# from great_expectations.core.batch import BatchRequest
-# from great_expectations.data_context.types.base import (
-#     DataContextConfig,
-#     CheckpointConfig
-# )
 from airflow.operators.bash_operator import BashOperator
 
 # Default DAG args
@@ -48,7 +43,7 @@ def dataops():
         wait_seconds=3,
     )
 
-    # Validation (GE)
+    # Validation (EL)
     validate_projects = GreatExpectationsOperator(
         task_id="validate_projects",
         checkpoint_name="projects",
@@ -63,12 +58,20 @@ def dataops():
     )
 
     # Transform
-    transform = BashOperator(task_id="transform", bash_command=f"cd {DBT_DIR} && dbt run && dbt test")
+    transform = BashOperator(task_id="transform", bash_command=f"cd '{DBT_DIR}' && dbt run && dbt test")
+
+    # Validate transform
+    validate_transforms = GreatExpectationsOperator(
+        task_id="validate_transforms",
+        checkpoint_name="labeled_projects",
+        data_context_root_dir=GE_ROOT_DIR,
+        fail_task_on_validation_failure=True,
+    )
 
     # Define DAG
     extract_and_load_projects >> validate_projects
     extract_and_load_tags >> validate_tags
-    [validate_projects, validate_tags] >> transform
+    [validate_projects, validate_tags] >> transform >> validate_transforms
 
 # Run DAG
 do = dataops()
