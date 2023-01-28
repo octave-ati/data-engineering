@@ -4,6 +4,9 @@
 # Log files
 *.log
 
+# Pid files
+*.pid
+
 # Log folder
 airflow/logs/
 
