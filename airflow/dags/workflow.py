@@ -64,7 +64,7 @@ def dataops():
     validate_transforms = GreatExpectationsOperator(
         task_id="validate_transforms",
         checkpoint_name="labeled_projects",
-        data_context_root_dir=GE_ROOT_DIR,
+        data_context_root_dir=GE_DIR,
         fail_task_on_validation_failure=True,
     )
 
