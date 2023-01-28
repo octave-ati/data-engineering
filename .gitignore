@@ -1,0 +1,8 @@
+# Db files
+*.db
+
+# Log files
+*.log
+
+# Log folder
+airflow/logs/
